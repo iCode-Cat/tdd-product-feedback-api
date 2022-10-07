@@ -19,6 +19,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/", require("./routes/user")({config: process.env, services}));
+app.use("/", require("./routes/feedback")({config: process.env, services}));
 
 // Server Start
 const server = app.listen(PORT, () => console.log(`Listening on port ${PORT}`));

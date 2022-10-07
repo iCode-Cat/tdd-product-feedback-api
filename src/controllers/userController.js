@@ -26,7 +26,6 @@ module.exports.user_login = async (req, res) => {
     const token = createToken(user._id);
     res.status(200).json({email, token, id: user._id});
   } catch (error) {
-    console.log(error);
     res.status(400).json({error: error.message});
   }
 };

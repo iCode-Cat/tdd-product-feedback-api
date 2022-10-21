@@ -6,6 +6,7 @@ require("dotenv").config();
 const server = require("../src/makeExpressServer");
 const Feedback = require("../src/models/feedbackSchema");
 const User = require("../src/models/userSchema");
+const votingSchema = require("../src/models/votingSchema");
 
 let email;
 let token;
@@ -31,8 +32,9 @@ beforeAll(() => {
 });
 
 afterAll(async () => {
-  await User.deleteOne({email});
+  const user = await User.findOneAndDelete({email});
   await Feedback.deleteOne({_id: feedbackId});
+  await votingSchema.deleteOne({user: user._id, feedback: feedbackId});
   server.close();
 });
 
@@ -212,9 +214,10 @@ describe("Feedback API", () => {
       );
   });
 
-  it("POST /feedback/upvote --> increment vote", async () => {
+  it("POST /feedback/vote --> increment vote", async () => {
     return request(server)
-      .post({
+      .post("/feedback/vote")
+      .send({
         id: feedbackId
       })
       .expect(200)
@@ -222,15 +225,19 @@ describe("Feedback API", () => {
       .then(response => {
         expect(response.body).toEqual(
           expect.objectContaining({
-            vote: expect.toBe(1)
+            vote: 1
           })
         );
       });
   });
 
-  it("POST /feedback/downvote --> decrement vote", async () => {
-    return request(server)
-      .post({
+  it("POST /feedback/vote --> decrement vote", async () => {
+    const user = await User.findOne({email});
+    const votingBefore = await votingSchema.findOne({user: user._id, feedback: feedbackId});
+    expect(votingBefore.upvoted).toBe(true);
+    await request(server)
+      .post("/feedback/vote")
+      .send({
         id: feedbackId
       })
       .expect(200)
@@ -238,10 +245,12 @@ describe("Feedback API", () => {
       .then(response => {
         expect(response.body).toEqual(
           expect.objectContaining({
-            vote: expect.toBe(0)
+            vote: 0
           })
         );
       });
+    const votingAfter = await votingSchema.findOne({user: user._id, feedback: feedbackId});
+    return expect(votingAfter.upvoted).toBe(false);
   });
 
   it("DELETE /feedback --> delete a feedback", async () => {
@@ -254,5 +263,14 @@ describe("Feedback API", () => {
       .expect(200);
     const item = await Feedback.findById(feedbackId);
     return expect(item).toBe(null);
+  });
+
+  it("DELETE /feedback --> protect /feedback", async () => {
+    await request(server)
+      .delete("/feedback")
+      .send({
+        id: feedbackId
+      })
+      .expect(401);
   });
 });

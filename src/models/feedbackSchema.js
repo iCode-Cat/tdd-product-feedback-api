@@ -20,7 +20,10 @@ const feedbackSchema = new mongoose.Schema(
       enum: ["planned", "in-progress", "live"],
       default: "planned"
     },
-    user: mongoose.Schema.Types.ObjectId,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user"
+    },
     vote: {
       type: Number,
       default: 0

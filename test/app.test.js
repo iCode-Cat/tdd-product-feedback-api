@@ -12,8 +12,6 @@ let email;
 let token;
 let feedbackId;
 
-jest.setTimeout(50000);
-
 // var token = null;
 
 // before(function(done) {
@@ -95,7 +93,7 @@ describe("User Authentication API", () => {
   it("GET /user/me--> middleware allows the users with valid token", async () => {
     return request(server)
       .get("/user/me")
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .expect(200)
       .expect("Content-Type", /json/)
       .then(response => {
@@ -121,7 +119,7 @@ describe("Feedback API", () => {
       })
       .expect(200)
       .expect("Content-Type", /json/)
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .then(response => {
         feedbackId = response.body._id;
         expect(response.body).toEqual(
@@ -145,7 +143,7 @@ describe("Feedback API", () => {
         category: "feature",
         details: "Lorem Ipsum Alamemun Bubujus jujus"
       })
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .expect(400);
   });
 
@@ -157,7 +155,7 @@ describe("Feedback API", () => {
         category: "TEST",
         details: "Lorem Ipsum Alamemun Bubujus jujus"
       })
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .expect(400);
   });
 
@@ -166,7 +164,7 @@ describe("Feedback API", () => {
       .get("/feedback")
       .expect(200)
       .expect("Content-Type", /json/)
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .then(response => {
         expect(response.body).toEqual(expect.arrayContaining([]));
       });
@@ -177,7 +175,7 @@ describe("Feedback API", () => {
       .get("/feedback/" + feedbackId)
       .expect(200)
       .expect("Content-Type", /json/)
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .then(response => {
         expect(response.body).toEqual(
           expect.objectContaining({
@@ -198,7 +196,7 @@ describe("Feedback API", () => {
         details: "updated",
         status: "in-progress"
       })
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .expect(200)
       .expect("Content-Type", /json/)
       .then(response =>
@@ -221,7 +219,7 @@ describe("Feedback API", () => {
         id: feedbackId
       })
       .expect(200)
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .then(response => {
         expect(response.body).toEqual(
           expect.objectContaining({
@@ -241,7 +239,7 @@ describe("Feedback API", () => {
         id: feedbackId
       })
       .expect(200)
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .then(response => {
         expect(response.body).toEqual(
           expect.objectContaining({
@@ -259,7 +257,7 @@ describe("Feedback API", () => {
       .send({
         id: feedbackId
       })
-      .set("Authorization", token)
+      .set("Authorization", `Bearer ${token}`)
       .expect(200);
     const item = await Feedback.findById(feedbackId);
     return expect(item).toBe(null);
